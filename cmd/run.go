@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"league-havester/connector"
-	"league-havester/finder"
 	"league-havester/harvester"
+	"league-havester/harvester/connector"
+	"league-havester/harvester/finder"
 	"league-havester/logging"
 
 	"github.com/spf13/cobra"

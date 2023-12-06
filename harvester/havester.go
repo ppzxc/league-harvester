@@ -2,9 +2,10 @@ package harvester
 
 import (
 	"context"
+	"github.com/panjf2000/ants/v2"
 	log "github.com/sirupsen/logrus"
-	"league-havester/connector"
-	"league-havester/finder"
+	"league-havester/harvester/connector"
+	"league-havester/harvester/finder"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,40 +22,58 @@ type Harvester interface {
 
 type harvester struct {
 	ctx             context.Context
+	cancelFunc      context.CancelFunc
 	harvesterOption Option
 	finderOption    finder.Option
+	pool            *ants.Pool
 }
 
 func (h *harvester) Start() {
 	signals := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		sig := <-signals
-		log.Println(sig)
-		done <- true
-	}()
+	h.infinity()
+	sig := <-signals
+	log.Info(sig)
+	h.cancelFunc()
+}
 
-	// business logic
-	ticker := time.NewTicker(h.harvesterOption.HarvesterDuration)
+func (h *harvester) infinity() {
 	go func() {
-		for range ticker.C {
-			if result, err := finder.New(h.ctx, h.finderOption).Execute(); err != nil {
-				log.Println(err)
-			} else {
-				log.Printf("%+v", result)
-				connector.New(h.ctx, connector.Config(result)).Connect()
+		ticker := time.NewTicker(h.harvesterOption.HarvesterDuration)
+		for {
+			select {
+			case <-ticker.C:
+				if connector.IsNotRunning() {
+					if result, err := finder.New(h.ctx, h.finderOption).Execute(); err != nil {
+						log.Error(err)
+					} else {
+						log.WithField("result", result).Debug("find fail")
+						c := connector.New(h.ctx, h.pool, connector.Config(result))
+						c.Connect()
+					}
+				} else {
+					log.Debug("connector is running")
+				}
+			case <-h.ctx.Done():
+				log.Info("terminated")
+				h.cancelFunc()
+				break
 			}
 		}
 	}()
-	<-done
-	log.Println("terminated")
 }
 
 func New(harvesterOption Option, finderOption finder.Option) Harvester {
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	pool, err := ants.NewPool(-1)
+	if err != nil {
+		panic(err)
+	}
 	return &harvester{
-		ctx:             context.Background(),
+		ctx:             ctx,
+		cancelFunc:      cancelFunc,
 		harvesterOption: harvesterOption,
 		finderOption:    finderOption,
+		pool:            pool,
 	}
 }

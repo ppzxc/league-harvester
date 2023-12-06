@@ -29,19 +29,6 @@ type Option struct {
 	LogCompress      bool
 }
 
-func Defaults() Option {
-	return Option{
-		UseJsonFormatter: false,
-		UseStdout:        true,
-		Level:            Info,
-		LogFilename:      "./harvester.log",
-		LogMaxSize:       500,
-		LogMaxBackup:     3,
-		LogMaxAge:        7,
-		LogCompress:      true,
-	}
-}
-
 func Setup(option Option) {
 	if option.UseJsonFormatter {
 		log.SetFormatter(&log.JSONFormatter{})

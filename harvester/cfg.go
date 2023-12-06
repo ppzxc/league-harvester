@@ -7,7 +7,7 @@ import (
 )
 
 func Flags(cmd *cobra.Command) {
-	cmd.Flags().Duration("harvester-duration", 5*time.Second, "수집기 메인 실행 반복 시간")
+	cmd.Flags().DurationP("harvester-duration", "D", 5*time.Second, "수집기 메인 실행 반복 시간")
 	if err := viper.BindPFlags(cmd.Flags()); err != nil {
 		panic(err)
 	}
