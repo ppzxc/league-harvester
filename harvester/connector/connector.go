@@ -168,12 +168,15 @@ func (c *connector) Connect() {
 	for {
 		select {
 		case block := <-readPump:
-			c.pool.Submit(func() {
-				err := api.Request(block)
+			err := c.pool.Submit(func() {
+				err := api.Request(block, api.Config())
 				if err != nil {
-					log.WithError(err).Error("api request failed")
+					log.WithError(err).WithField("block", prettyPrint(block)).Error("api request failed")
 				}
 			})
+			if err != nil {
+				log.WithError(err).WithField("block", prettyPrint(block)).Error("pool submit err")
+			}
 		case <-c.ctx.Done():
 			if err := conn.Close(); err != nil {
 				log.Error(err)
@@ -183,6 +186,11 @@ func (c *connector) Connect() {
 			return
 		}
 	}
+}
+
+func prettyPrint(i interface{}) string {
+	s, _ := json.MarshalIndent(i, "", "\t")
+	return string(s)
 }
 
 func New(ctx context.Context, pool *ants.Pool, option Option) Connector {

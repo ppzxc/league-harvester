@@ -45,7 +45,7 @@ func (h *harvester) infinity() {
 			case <-ticker.C:
 				if connector.IsNotRunning() {
 					if result, err := finder.New(h.ctx, h.finderOption).Execute(); err != nil {
-						log.Error(err)
+						log.WithError(err).Debug("error")
 					} else {
 						log.WithField("result", result).Debug("find fail")
 						c := connector.New(h.ctx, h.pool, connector.Config(result))

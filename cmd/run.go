@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"league-havester/api"
 	"league-havester/harvester"
 	"league-havester/harvester/connector"
 	"league-havester/harvester/finder"
@@ -25,4 +26,5 @@ func init() {
 	harvester.Flags(runCmd)
 	finder.Flags(runCmd)
 	connector.Flags(runCmd)
+	api.Flags(runCmd)
 }

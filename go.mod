@@ -3,6 +3,7 @@ module league-havester
 go 1.21.3
 
 require (
+	github.com/go-resty/resty/v2 v2.10.0
 	github.com/gorilla/websocket v1.5.1
 	github.com/panjf2000/ants/v2 v2.9.0
 	github.com/sirupsen/logrus v1.9.3
@@ -25,7 +26,6 @@ require (
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/net v0.18.0 // indirect
