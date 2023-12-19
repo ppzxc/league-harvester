@@ -125,5 +125,5 @@ func logging(resp *resty.Response, err error) {
 	log.WithField("IsConnWasIdle", ti.IsConnWasIdle).Debug()
 	log.WithField("ConnIdleTime", ti.ConnIdleTime).Debug()
 	log.WithField("RequestAttempt", ti.RequestAttempt).Debug()
-	log.WithField("RemoteAddr", ti.RemoteAddr.String()).Debug()
+	log.WithField("RemoteAddr", ti.RemoteAddr).Debug()
 }
