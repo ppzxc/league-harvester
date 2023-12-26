@@ -23,7 +23,7 @@ func Request(block *eogStatsBlock.EogStatsBlock, option Option) error {
 			SetBody(body).
 			SetResult(map[string]interface{}{}).
 			SetError(map[string]interface{}{}).
-			Post(fmt.Sprintf("%s://%s:%d/players/%s/games", option.Protocol, option.Host, option.Port, body.Puuid))
+			Post(fmt.Sprintf("%s://%s:%d/api/v1/players/%s/games", option.Protocol, option.Host, option.Port, body.Puuid))
 		logging(resp, err)
 		if err != nil {
 			return errors.New(resp.String())
