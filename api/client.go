@@ -11,19 +11,20 @@ import (
 
 var client = resty.New()
 
-func Request(block *eogStatsBlock.EogStatsBlock, option Option) error {
+func Request(block eogStatsBlock.EogStatsBlock, option Option) error {
 	log.WithField("json", prettyPrint(block)).Debug("call")
 	isWinning := isWinningCheck(block)
 	winLogging(isWinning)
 	if block.EventType == "Create" {
-		body := of(block, isWinning)
+		//body := of(block, isWinning)
 		resp, err := client.R().
 			SetHeader("Content-Type", "application/json;charset=UTF8").
 			SetHeader("Accept", "application/json").
-			SetBody(body).
+			//SetBody(body).
+			SetBody(block).
 			SetResult(map[string]interface{}{}).
 			SetError(map[string]interface{}{}).
-			Post(fmt.Sprintf("%s://%s:%d/api/v1/players/%s/games", option.Protocol, option.Host, option.Port, body.Puuid))
+			Post(fmt.Sprintf("%s://%s:%d/api/v1/players/%s/games", option.Protocol, option.Host, option.Port, block.Data.LocalPlayer.Puuid))
 		logging(resp, err)
 		if err != nil {
 			return errors.New(resp.String())
@@ -34,7 +35,7 @@ func Request(block *eogStatsBlock.EogStatsBlock, option Option) error {
 	return nil
 }
 
-func isWinningCheck(block *eogStatsBlock.EogStatsBlock) bool {
+func isWinningCheck(block eogStatsBlock.EogStatsBlock) bool {
 	isWinning := false
 	for i := range block.Data.Teams {
 		if block.Data.Teams[i].IsPlayerTeam {

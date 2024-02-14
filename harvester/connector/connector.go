@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/panjf2000/ants/v2"
 	log "github.com/sirupsen/logrus"
@@ -68,13 +69,14 @@ func (c *connector) Connect() {
 	defer setRunning(false)
 
 	u := url.URL{Scheme: "wss", Host: "127.0.0.1:" + strconv.Itoa(c.Port)}
-	timeout, _ := context.WithTimeout(c.ctx, c.ConnectTimeout)
 	header := http.Header{}
 	header.Add("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(("riot:"+c.Token))))
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
 	}
 	websocket.DefaultDialer.TLSClientConfig = tlsConfig
+	timeout, _ := context.WithTimeout(c.ctx, c.ConnectTimeout)
+	fmt.Println(u.String())
 	conn, response, err := websocket.DefaultDialer.DialContext(timeout, u.String(), header)
 	if err != nil {
 		log.Error(err)
@@ -120,7 +122,7 @@ func (c *connector) Connect() {
 		}
 	}()
 
-	readPump := make(chan *eogStatsBlock.EogStatsBlock, 1)
+	readPump := make(chan eogStatsBlock.EogStatsBlock, 1)
 	go func() {
 		conn.SetReadDeadline(time.Now().Add(c.PongWait))
 		conn.SetPongHandler(func(string) error {
@@ -139,7 +141,7 @@ func (c *connector) Connect() {
 					secondCommaIndex := strings.Index(rawMessage, "\",")
 					rawBody := rawMessage[secondCommaIndex+2 : len(rawMessage)-1]
 					log.Debug("=========================================================================================================")
-					log.WithField("rawBody", rawBody).Trace("read block")
+					log.WithField("rawBody", rawBody).Debug("read block")
 					event := model.Event{}
 					err := json.Unmarshal([]byte(rawBody), &event)
 					if err != nil {
@@ -147,8 +149,8 @@ func (c *connector) Connect() {
 						return
 					}
 					if event.Uri == "/lol-end-of-game/v1/eog-stats-block" {
-						block := &eogStatsBlock.EogStatsBlock{}
-						err := json.Unmarshal([]byte(rawBody), block)
+						block := eogStatsBlock.EogStatsBlock{}
+						err := json.Unmarshal([]byte(rawBody), &block)
 						if err != nil {
 							log.WithError(err).Error("err unmarshal block")
 							return

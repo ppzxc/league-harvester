@@ -50,6 +50,7 @@ func (h *harvester) infinity() {
 						log.WithField("result", result).Debug("find fail")
 						c := connector.New(h.ctx, h.pool, connector.Config(result))
 						c.Connect()
+						//c.GwsConnect()
 					}
 				} else {
 					log.Debug("connector is running")
